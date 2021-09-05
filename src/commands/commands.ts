@@ -1,9 +1,14 @@
-import {Context, Scenes} from 'telegraf';
 import { PrismaClient } from '@prisma/client'
-import {bot} from '../bot/bot'
+import { Composer, Scenes, session } from 'telegraf';   
+import { createAddWizard } from '../utils/addWizard';
+import { bot } from '../bot/bot'
 import Message from '../types/message'
+import { SceneContextScene } from 'telegraf/typings/scenes';
 
 const prisma = new PrismaClient();
+const addStage = new Scenes.Stage([createAddWizard("ADD", (ctx: Scenes.WizardContext) => {
+    console.log(ctx.session);
+})])
 
 const commands = [
     { command: 'data', description: 'Log Data' },
@@ -47,21 +52,9 @@ async function setup(){
     //    ctx.telegram.sendPhoto(ctx.chat.id, ctx.message?.photo[0].file_id, {caption: ctx.message?.caption})
     //}).catch(err => console.log(err));
 
-    bot.command('add', ctx => {
-        let message: Message;
-        const dialogWizard = new Scenes.WizardScene(
-            "ADD_DIALOG_WIZARD", 
-        );
-        if(ctx.message.text == '/add'){
-            ctx.reply("Envie a mensagem que gostaria de salvar.");
-            
-        }
-        else {
-            let message = ctx.message.text.replace(/\/add\s/,'');
-            ctx.reply("De quanto em quanto tempo a mensagem será enviada?");
-            console.log(message);
-        }
-    });
+    bot.use(session());
+    bot.use(addStage.middleware());
+    bot.command('add', ctx => ctx.scene.enter("ADD") );
 }
 
 function launch(){

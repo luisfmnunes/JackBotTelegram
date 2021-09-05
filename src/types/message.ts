@@ -1,7 +1,7 @@
 interface Message{
     chat_id: number,
     time: number,
-    text?: string,
+    caption?: string,
     file_id?: string
 }
 

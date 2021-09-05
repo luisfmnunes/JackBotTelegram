@@ -8,10 +8,10 @@ datasource db {
 
 model Message {
     id Int @default(autoincrement()) @id
-    chatid Int @unique
+    chatid BigInt @unique
     fileid String? @unique
     caption String?
-    time Int
+    period Int
     lastCalled DateTime @default(now())
     createdAt DateTime @default(now())
 }
