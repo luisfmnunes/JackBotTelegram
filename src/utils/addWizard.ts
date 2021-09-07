@@ -3,6 +3,8 @@ import { WizardContext, WizardContextWizard } from "telegraf/typings/scenes";
 import { composeWizardScene } from "./sceneFactory";
 import {prisma} from "../db/prisma"
 import { forceReply } from "telegraf/typings/markup";
+import { addAndSend } from "./sender";
+import { Message } from "../types/message";
 
 const exit_keyboard = Markup.keyboard(['🛑 Exit']).oneTime().resize();
 const last_keyboard = Markup.keyboard([
@@ -19,7 +21,7 @@ interface ContextComplement{
         state:{
             file_id?: string
             caption?: string
-            type?: string
+            type: string
             time: number
         }
     }
@@ -190,13 +192,18 @@ export const createAddWizard = composeWizardScene(
 
         return ctx.wizard.next();
     }, 
-    (ctx: (AnyContext & ContextComplement), done: any) => {
+    async (ctx: (AnyContext & ContextComplement), done: any) => {
         if(ctx.message.text?.match(/"(❌ Não|✅ Sim|🛑 Exit)"/)){
             ctx.reply("Unexpected Answer.")
             return ctx.wizard.back();
         }
         if(ctx.message.text?.match(/✅ Sim|sim/gi)){
-            ctx.reply("Mensagem aceita", {reply_markup:undefined});
+            const result = await addAndSend({time: ctx.wizard.state.time,
+                                             type: ctx.wizard.state.type,
+                                             caption: ctx.wizard.state.caption,
+                                             file_id: ctx.wizard.state.file_id});
+            if(result)
+                ctx.reply("Mensagem aceita", {reply_markup:{remove_keyboard:true}});
         }
 
         if(ctx.message.text?.match(/❌ Não|não|nao/gi)){

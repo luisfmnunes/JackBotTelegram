@@ -1,9 +1,10 @@
 import { Context, Middleware, Scenes, session } from 'telegraf';   
 import { createAddWizard } from '../utils/addWizard';
 import { bot } from '../bot/bot'
-import { SceneContextScene, SceneSessionData } from 'telegraf/typings/scenes';
 import { Update } from 'typegram';
 import {prisma} from '../db/prisma'
+import { removeMessages } from '../db/messageModel';
+import { messageCheck } from '../utils/sender';
 
 const addStage = new Scenes.Stage([createAddWizard("ADD", (ctx: Scenes.WizardContext) => {
     console.log(ctx.session);
@@ -11,9 +12,10 @@ const addStage = new Scenes.Stage([createAddWizard("ADD", (ctx: Scenes.WizardCon
 
 const commands = [
     { command: 'data', description: 'Log Data' },
-    { command: 'comandos', description: 'Comandos '},
+    { command: 'comandos', description: 'Lista os Comandos'},
     { command: "add", description: "Adiciona uma nova mensagem"},
-    { command: "register", description: "Registra o chat para o bot enviar mensagens"}
+    { command: "register", description: "Registra o chat para o bot enviar mensagens"},
+    { command: "clear", description: "Limpar todas as mensagens"}
 ];
 
 interface ChatContext{
@@ -47,7 +49,7 @@ async function setup(){
             });
             ctx.reply(message).catch(err=>{
                 wait(err.response.parameters.retry_after*1001);
-            }).then(() => ctx.reply(message));
+            })
         }).catch(err => {
             console.log("Error listing commands: " + err);
         });
@@ -87,6 +89,9 @@ async function setup(){
 
         }
     })
+
+    messageCheck();
+    bot.command("clear", ctx => removeMessages());
 
     bot.use(session());
     bot.use(addStage.middleware());
