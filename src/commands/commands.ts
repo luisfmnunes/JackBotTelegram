@@ -1,11 +1,10 @@
-import { PrismaClient } from '@prisma/client'
-import { Composer, Scenes, session } from 'telegraf';   
+import { Context, Middleware, Scenes, session } from 'telegraf';   
 import { createAddWizard } from '../utils/addWizard';
 import { bot } from '../bot/bot'
-import Message from '../types/message'
-import { SceneContextScene } from 'telegraf/typings/scenes';
+import { SceneContextScene, SceneSessionData } from 'telegraf/typings/scenes';
+import { Update } from 'typegram';
+import {prisma} from '../db/prisma'
 
-const prisma = new PrismaClient();
 const addStage = new Scenes.Stage([createAddWizard("ADD", (ctx: Scenes.WizardContext) => {
     console.log(ctx.session);
 })])
@@ -13,11 +12,24 @@ const addStage = new Scenes.Stage([createAddWizard("ADD", (ctx: Scenes.WizardCon
 const commands = [
     { command: 'data', description: 'Log Data' },
     { command: 'comandos', description: 'Comandos '},
-    { command: "add", description: "Adiciona uma nova mensagem"}
+    { command: "add", description: "Adiciona uma nova mensagem"},
+    { command: "register", description: "Registra o chat para o bot enviar mensagens"}
 ];
+
+interface ChatContext{
+    chat: {
+        id: number
+        title?: string
+    }
+};
 
 const wait = async (ms: number) => {
     await new Promise(r => setTimeout(r,ms));
+};
+
+async function is_adm( ctx: Context ){
+    let adms = await ctx.getChatAdministrators()
+    return adms.find(adm => ctx.from?.id === adm.user.id);
 };
 
 async function setup(){
@@ -52,8 +64,33 @@ async function setup(){
     //    ctx.telegram.sendPhoto(ctx.chat.id, ctx.message?.photo[0].file_id, {caption: ctx.message?.caption})
     //}).catch(err => console.log(err));
 
+    bot.command("register", async (ctx: (Context<Update> & ChatContext)) => {
+        const result = await is_adm(ctx);
+        if(result){
+            const chatExist = await prisma.chat.findFirst({
+                where:{
+                    chatid: ctx.chat.id
+                }
+            });
+
+            if(!chatExist){
+                const createChat = await prisma.chat.create({
+                    data:{
+                        chatid: ctx.chat.id,
+                        title: ctx.chat?.title || "NoName"
+                    }
+                });
+                ctx.reply(`Chat ${ctx.chat.title} (id: ${ctx.chat.id}) registrado com sucesso`);
+            } else {
+                ctx.reply(`Chat ${ctx.chat.title} (id: ${ctx.chat.id}) já registrado.`);
+            }
+
+        }
+    })
+
     bot.use(session());
     bot.use(addStage.middleware());
+    addStage.hears("❌ Exit", ctx => ctx.scene.leave());
     bot.command('add', ctx => ctx.scene.enter("ADD") );
 }
 

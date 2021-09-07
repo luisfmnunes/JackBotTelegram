@@ -8,12 +8,18 @@ datasource db {
 
 model Message {
     id Int @default(autoincrement()) @id
-    chatid BigInt @unique
     fileid String? @unique
+    type String
     caption String?
     period Int
     lastCalled DateTime @default(now())
     createdAt DateTime @default(now())
+}
+
+model Chat {
+    id Int @default(autoincrement()) @id
+    chatid BigInt @unique
+    title String
 }
 
 generator client{
