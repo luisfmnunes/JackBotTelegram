@@ -1,10 +1,8 @@
 import { Markup } from "telegraf";
 import { WizardContext, WizardContextWizard } from "telegraf/typings/scenes";
 import { composeWizardScene } from "./sceneFactory";
-import {prisma} from "../db/prisma"
-import { forceReply } from "telegraf/typings/markup";
 import { addAndSend } from "./sender";
-import { Message } from "../types/message";
+
 
 const exit_keyboard = Markup.keyboard(['🛑 Exit']).oneTime().resize();
 const last_keyboard = Markup.keyboard([
@@ -81,7 +79,14 @@ interface ContextComplement{
 
 
 export const createAddWizard = composeWizardScene(
-    (ctx: (AnyContext & ContextComplement)) => {
+    async (ctx: (AnyContext & ContextComplement), done: any) => {
+        if(ctx.message.chat.type.match(/group|supergroup/)){
+            let adms = await ctx.getChatAdministrators()
+            if(!(adms.find(adm => ctx.from?.id === adm.user.id))){
+                ctx.reply("Somente admins podem adicionar mensagens no bot");
+                return done();
+            }
+        }
         ctx.reply("Envie a mensagem que gostaria de salvar.", exit_keyboard);
         return ctx.wizard.next();
         

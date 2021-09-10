@@ -6,27 +6,27 @@ import { Message } from "../types/message"
 const sendMessage = async (message: Message, chatid: BigInt) => {
     switch(message.type){
         case "text":
-            await bot.telegram.sendMessage(chatid.toString(), message.caption || "nothing");
+            await bot.telegram.sendMessage(chatid.toString(), message.caption || "nothing", {reply_markup:{remove_keyboard: true}});
             break;
         case "photo":
             if(message.file_id)
-                await bot.telegram.sendPhoto(chatid.toString(), message.file_id,{caption: message.caption});
+                await bot.telegram.sendPhoto(chatid.toString(), message.file_id,{caption: message.caption,reply_markup:{remove_keyboard: true}});
             break;
         case "audio":
             if(message.file_id)
-                await bot.telegram.sendAudio(chatid.toString(), message.file_id,{caption: message.caption});
+                await bot.telegram.sendAudio(chatid.toString(), message.file_id,{caption: message.caption,reply_markup:{remove_keyboard: true}});
             break;
         case "sticker":
             if(message.file_id)
-                await bot.telegram.sendSticker(chatid.toString(), message.file_id);
+                await bot.telegram.sendSticker(chatid.toString(), message.file_id, {reply_markup:{remove_keyboard: true}});
             break;
         case "animation":
             if(message.file_id)
-                await bot.telegram.sendAnimation(chatid.toString(), message.file_id,{caption: message.caption});
+                await bot.telegram.sendAnimation(chatid.toString(), message.file_id,{caption: message.caption,reply_markup:{remove_keyboard: true}});
             break;
         case "video":
             if(message.file_id)
-                await bot.telegram.sendVideo(chatid.toString(), message.file_id,{caption: message.caption});
+                await bot.telegram.sendVideo(chatid.toString(), message.file_id,{caption: message.caption,reply_markup:{remove_keyboard: true}});
             break;
 
     }
@@ -55,6 +55,7 @@ const messageCheck = async () => {
         for(const message of messages){
             let nextCall: Date = new Date(message.lastCalled.getTime() + message.period);
             if(nextCall < new Date(Date.now())){
+                console.log(`Sending Message of id ${message.id}. Caption: ${(message.caption?.substring(0,20) || "no caption")+"..."}. File ID: ${message.fileid || "no file_id"}`);
                 for(const chat of chats)
                     await sendMessage({time: message.period, type: message.type, caption: message.caption || undefined, file_id: message.fileid || undefined},chat.chatid);
                 await prisma.message.update({

@@ -11,7 +11,6 @@ const addStage = new Scenes.Stage([createAddWizard("ADD", (ctx: Scenes.WizardCon
 })])
 
 const commands = [
-    { command: 'data', description: 'Log Data' },
     { command: 'comandos', description: 'Lista os Comandos'},
     { command: "add", description: "Adiciona uma nova mensagem"},
     { command: "register", description: "Registra o chat para o bot enviar mensagens"},
@@ -55,11 +54,6 @@ async function setup(){
         });
     });
 
-    bot.command('data', ctx=> {
-        console.log(ctx.message);
-        console.log(ctx.updateType);
-    })
-
     //bot.on('photo', ctx=>{
     //    console.log(ctx.message);
     //    console.log(ctx.message.photo[-1]);
@@ -91,11 +85,20 @@ async function setup(){
     })
 
     messageCheck();
-    bot.command("clear", ctx => removeMessages());
+    bot.command("clear", async ctx => {
+        if(ctx.message.chat.type.match(/group|supergroup/)){
+            const isadm = await is_adm(ctx);
+            if(isadm)        
+                removeMessages();
+            else
+                ctx.reply("Somente administradores podem usar comandos");
+            
+        }
+    });
 
     bot.use(session());
     bot.use(addStage.middleware());
-    addStage.hears("❌ Exit", ctx => ctx.scene.leave());
+    // addStage.hears("❌ Exit", ctx => ctx.scene.leave());
     bot.command('add', ctx => ctx.scene.enter("ADD") );
 }
 
