@@ -1,20 +1,23 @@
 import { Context, Middleware, Scenes, session } from 'telegraf';   
 import { createAddWizard } from '../utils/addWizard';
+import { createDelWizard } from '../utils/delWizard';
 import { bot } from '../bot/bot'
 import { Update } from 'typegram';
 import {prisma} from '../db/prisma'
 import { removeMessages } from '../db/messageModel';
 import { messageCheck } from '../utils/sender';
+import { SceneContextScene } from 'telegraf/typings/scenes';
 
-const addStage = new Scenes.Stage([createAddWizard("ADD", (ctx: Scenes.WizardContext) => {
+const stage = new Scenes.Stage([createAddWizard("ADD", (ctx: Scenes.WizardContext) => {
     console.log(ctx.session);
-})])
+}), createDelWizard("DEL", (ctx: Scenes.WizardContext) => { console.log(ctx.session) })]);
 
 const commands = [
     { command: 'comandos', description: 'Lista os Comandos'},
     { command: "add", description: "Adiciona uma nova mensagem"},
     { command: "register", description: "Registra o chat para o bot enviar mensagens"},
-    { command: "clear", description: "Limpar todas as mensagens"}
+    { command: "clear", description: "Limpar todas as mensagens"},
+    { command: "del", description: "Deleta uma única mensagem"}
 ];
 
 interface ChatContext{
@@ -29,7 +32,7 @@ const wait = async (ms: number) => {
 };
 
 async function is_adm( ctx: Context ){
-    let adms = await ctx.getChatAdministrators()
+    let adms = await ctx.getChatAdministrators().catch(err => []);
     return adms.find(adm => ctx.from?.id === adm.user.id);
 };
 
@@ -97,9 +100,10 @@ async function setup(){
     });
 
     bot.use(session());
-    bot.use(addStage.middleware());
+    bot.use(stage.middleware());
     // addStage.hears("❌ Exit", ctx => ctx.scene.leave());
     bot.command('add', ctx => ctx.scene.enter("ADD") );
+    bot.command('del', ctx => ctx.scene.enter("DEL") );
 }
 
 function launch(){

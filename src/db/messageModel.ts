@@ -15,9 +15,20 @@ const addMessage = async (message: Message) => {
     return false;
 }
 
+const deleteMessage = async (id: number) => {
+    const result = await prisma.message.delete({
+        where:{
+            id: id
+        }
+    })
+
+    if(result) return true;
+    return false;
+}
+
 const removeMessages = async() => {
     const result = await prisma.message.deleteMany();
     return result;
 }
 
-export {addMessage, removeMessages};
+export {addMessage, deleteMessage, removeMessages};

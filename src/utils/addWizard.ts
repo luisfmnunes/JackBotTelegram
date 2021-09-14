@@ -1,7 +1,7 @@
 import { Markup } from "telegraf";
-import { WizardContext, WizardContextWizard } from "telegraf/typings/scenes";
 import { composeWizardScene } from "./sceneFactory";
 import { addAndSend } from "./sender";
+import { AnyContext, ContextComplement } from "../types/context"
 
 
 const exit_keyboard = Markup.keyboard(['🛑 Exit']).oneTime().resize();
@@ -10,72 +10,6 @@ const last_keyboard = Markup.keyboard([
     ['🛑 Exit']
 ]).oneTime().resize();
 const empty_keyboard = Markup.keyboard([""]).oneTime().resize();
-     
-interface AnyContext extends WizardContext{
-};
-
-interface ContextComplement{
-    wizard:{
-        state:{
-            file_id?: string
-            caption?: string
-            type: string
-            time: number
-        }
-    }
-    chat?:{
-        title?: string
-        first_name?: string
-        username?: string
-    }
-    message:{
-        text?: string,
-        photo?: {
-            file_id: string
-            file_unique_id: string
-            file_size: number
-            width: number
-            height: number
-        }[]
-        audio?: {
-            duration: number
-            file_name: string
-            mime_type: string
-            title: string
-            file_id: string
-            file_unique_id: string
-            file_size: number            
-        },
-        sticker?:{
-            file_id: string
-        }
-        animation?:{
-            file_name: string
-            mime_type: string
-            duration: number
-            width: number
-            height: number
-            file_id: string
-            file_unique_id: string
-            file_size: number
-        }
-        latitude?: string,
-        longitude?: string,
-        media?: object,
-        video?: {
-            duration: number
-            width: number
-            height: number
-            file_name: string
-            mime_type: string
-            file_id: string
-            file_unique_id: string
-            file_size: number
-        }
-        voice?: object,
-        caption?: string
-    }
-};
 
 
 export const createAddWizard = composeWizardScene(
@@ -138,9 +72,8 @@ export const createAddWizard = composeWizardScene(
         let hour = 0;
         let min = 0
         let trimmed = ctx.message.text?.trim() || "";
-        console.log(trimmed);
+        // console.log(trimmed);
         if(trimmed.indexOf('h')!=-1){
-            console.log("?ASDFA")
             hour = parseInt(trimmed.substring(0,trimmed.indexOf('h')));
             if(!trimmed.endsWith('h'))
                 min = parseInt(trimmed.substring(trimmed.indexOf('h')+1));
@@ -150,7 +83,7 @@ export const createAddWizard = composeWizardScene(
         else
             min = parseInt(trimmed);
 
-        console.log(`${hour}:${min}`)
+        // console.log(`${hour}:${min}`)
         if(!hour && !min){
             ctx.reply("Erro parsing time. Type a new time period for the message:");
             return ctx.wizard;
