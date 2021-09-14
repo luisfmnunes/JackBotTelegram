@@ -62,17 +62,17 @@ Currently there are five available commands as described below:
 - register: Registers a group chat id for redistribution of messages (called on group)
 - add: Starts the add wizard to add a message. The steps are the following:
 
- 1. Send the Message or forward a Message to be stored
- 2. Inform the period which the message will be distributed. Accepted formats:
+   1. Send the Message or forward a Message to be stored
+   2. Inform the period which the message will be distributed. Accepted formats:
 
-  - number ( in minutes ) | _e.g._ 10
-  - number + m | _e.g._ 15m
-  - number + h | _e.g._ 1h
-  - number + h + number ( in minutes ) | _e.g._ 1h20
-  - number + h + number + m | _e.g._ 2h30m
- 
- 3. Preview displayed asking to confirm the message or restart the process
- 4. Confirmation of message registration
+      - number ( in minutes ) | _e.g._ 10
+      - number + m | _e.g._ 15m
+      - number + h | _e.g._ 1h
+      - number + h + number ( in minutes ) | _e.g._ 1h20
+      - number + h + number + m | _e.g._ 2h30m
+
+   3. Preview displayed asking to confirm the message or restart the process
+   4. Confirmation of message registration
 
 - del: Deletes a single message. Available messages are displayed on keyboard.
 - clear: Clear all messages stored
