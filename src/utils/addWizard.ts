@@ -2,6 +2,7 @@ import { Markup } from "telegraf";
 import { composeWizardScene } from "./sceneFactory";
 import { addAndSend } from "./sender";
 import { AnyContext, ContextComplement } from "../types/context"
+import { findAllChat } from "../db/chatController";
 
 
 const exit_keyboard = Markup.keyboard(['🛑 Exit']).oneTime().resize();
@@ -61,7 +62,7 @@ export const createAddWizard = composeWizardScene(
         ctx.reply("De quanto em quanto tempo a mensagem será enviada?", exit_keyboard);
         return ctx.wizard.next();
     },
-    async (ctx: (AnyContext & ContextComplement), done: any) => {
+    async (ctx: (AnyContext & ContextComplement), done: any)=> {
         if(ctx.message.text == "🛑 Exit") return done();
         const match = ctx.message.text?.match(/^(\d+)$|^(\d+)\s*[hm]\s*(\d+(?:\s*[m]*))?$/)
         if(!match){
@@ -90,6 +91,46 @@ export const createAddWizard = composeWizardScene(
         }
 
         ctx.wizard.state.time = ((hour*60)+min)*60000;
+        console.log(ctx.wizard.state);
+
+        const chats = await findAllChat();
+        const chatString = ["-1 - Todos"];
+        for(const chat of chats){
+            chatString.push(`${chat.id} - ${chat.title}`);
+        }
+        chatString.push("🛑 Exit");
+
+        const chatKeyboard = Markup.keyboard(chatString).oneTime().resize();
+
+        ctx.reply("Qual grupo(s) deseja registrar a mensagem? ", chatKeyboard);
+        return ctx.wizard.next();
+
+        
+    },
+    async (ctx: (AnyContext & ContextComplement), done: any) => {
+        if(ctx.message.text == "🛑 Exit") return done();
+        if(ctx.message.text?.match(/\d - ./)){
+            const chat_id = parseInt( ctx.message.text.substring(0, ctx.message.text.indexOf('-')).trim() );
+            if(chat_id>=0)
+                ctx.wizard.state.groups = [chat_id];
+            else
+                ctx.wizard.state.groups = await (await findAllChat()).map(chat => chat.id);
+        } else if (ctx.message.text?.match(/^(\d+[\s,]*)+$/)){
+            ctx.wizard.state.groups = ctx.message.text.split(',').map((elem) => parseInt(elem));
+            // CAREFUL DOESN'T CHECK IF GIVEN GROUPS EXISTS!
+        } else {
+            const chats = await findAllChat();
+            const chatString = ["-1 - Todos"];
+            for(const chat of chats){
+                chatString.push(`${chat.id} - ${chat.title}`);
+            }
+            chatString.push("🛑 Exit");
+    
+            const chatKeyboard = Markup.keyboard(chatString).oneTime().resize();
+            ctx.reply("Invalid Group! Either choose one of the options or send groups id separated by comma.", chatKeyboard);
+            return ctx.wizard;
+        }
+
         console.log(ctx.wizard.state);
 
         await ctx.reply(`A mensagem a ser enviada será essa:`);
@@ -139,7 +180,8 @@ export const createAddWizard = composeWizardScene(
             const result = await addAndSend({time: ctx.wizard.state.time,
                                              type: ctx.wizard.state.type,
                                              caption: ctx.wizard.state.caption,
-                                             file_id: ctx.wizard.state.file_id});
+                                             file_id: ctx.wizard.state.file_id,
+                                             groups: ctx.wizard.state.groups});
             if(result)
                 ctx.reply("Mensagem aceita", {reply_markup:{remove_keyboard:true}});
         }

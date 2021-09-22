@@ -6,7 +6,7 @@ import {bot} from './bot/bot';
 import commands from './commands/commands'
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3928;
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const URL = process.env.URL || ":";
 

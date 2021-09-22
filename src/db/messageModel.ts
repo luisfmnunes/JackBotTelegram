@@ -7,7 +7,8 @@ const addMessage = async (message: Message) => {
             fileid: message.file_id,
             type: message.type,
             caption: message.caption,
-            period: message.time
+            period: message.time,
+            groups: message.groups
         }
     })
 

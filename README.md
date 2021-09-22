@@ -45,6 +45,24 @@ npx ts-node-dev src/index.ts
 
 ```
 
+### Prisma
+
+Prisma is used to manage the Relational Database (postgresql used), dealing with migrations and basic operations (querys, insertions, etc). So the prisma CLI (Command Line Interface) is recommended in order to call prisma commands.
+
+To start a table in the database provided (contained on the DATABASE_URL environt variable) a migration is necessary. The following commands provides the migration execution.
+
+- Development
+
+``` bash
+npx prisma migrate dev --name NAME_OF_MIGRATION
+```
+
+- Production and Testing Environments
+
+``` bash
+npx prisma migrate deploy
+```
+
 ## Usage
 
 After performing the previous steps, talking to the bot through commands allows to use the bot accordingly to the desired purpose. The main steps are registering chats and adding messages for posting.
@@ -76,3 +94,10 @@ Currently there are five available commands as described below:
 
 - del: Deletes a single message. Available messages are displayed on keyboard.
 - clear: Clear all messages stored
+
+## Upcoming Changes
+
+- Support to Language Selection (currently only supports PT-BR)
+- Removal of messages given Date ar gument
+- Update of specific message
+- Selection of Groups for distribution

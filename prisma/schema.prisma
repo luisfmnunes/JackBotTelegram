@@ -12,6 +12,7 @@ model Message {
     type String
     caption String?
     period Int
+    groups Int[]
     lastCalled DateTime @default(now())
     createdAt DateTime @default(now())
 }
