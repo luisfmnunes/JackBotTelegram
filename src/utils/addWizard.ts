@@ -22,8 +22,14 @@ export const createAddWizard = composeWizardScene(
                 return done();
             }
         }
-        ctx.reply("Envie a mensagem que gostaria de salvar.", exit_keyboard);
-        return ctx.wizard.next();
+        if(ctx.from?.username?.match(/sirrandoom|victorROCKETcripto/)){
+            ctx.reply("Envie a mensagem que gostaria de salvar.", exit_keyboard);
+            return ctx.wizard.next();
+        } else {
+            ctx.reply("Somenete @sirrandoom e @victorROCKETcripto podem adicionar mensagens");
+            return done();
+        }
+        
         
     },
     (ctx: (AnyContext & ContextComplement), done: any) => {
