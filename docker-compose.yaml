@@ -1,7 +1,10 @@
-version: '3'
+version: '3.8'
 
 services:
   web:
+    image: node:14-alpine
+    entrypoint: entrypoint/entrypoint.sh
+    env_file: .env
     ports:
       - "8000:80"
     restart: always
@@ -9,6 +12,7 @@ services:
       - db
   db:
     image: postgres:3.14-alpine
+    container_name: db
     restart: always
     volumes:
       - /private/var/lib/postgresql:/var/lib/postgresql
