@@ -5,7 +5,7 @@ const findAllChat = async () => {
     return await prisma.chat.findMany();
 }
 
-const fildManyChat = async (ids: number[]) => {
+const findManyChat = async (ids: number[]) => {
      const result = await prisma.chat.findMany()
      const filter = result.filter((chat) => ids.find(elem => elem == chat.id));
 
@@ -13,4 +13,4 @@ const fildManyChat = async (ids: number[]) => {
      return filter;
 }
 
-export {findAllChat, fildManyChat};
+export {findAllChat, findManyChat};

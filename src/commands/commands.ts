@@ -4,20 +4,24 @@ import { createDelWizard } from '../utils/delWizard';
 import { bot } from '../bot/bot'
 import { Update } from 'typegram';
 import {prisma} from '../db/prisma'
-import { removeMessages } from '../db/messageModel';
+import { removeMessages } from '../db/messageController';
 import { messageCheck } from '../utils/sender';
 import { SceneContextScene } from 'telegraf/typings/scenes';
+import { createUpdateWizard } from '../utils/updateWizard';
 
-const stage = new Scenes.Stage([createAddWizard("ADD", (ctx: Scenes.WizardContext) => {
-    console.log(ctx.session);
-}), createDelWizard("DEL", (ctx: Scenes.WizardContext) => { console.log(ctx.session) })]);
+const stage = new Scenes.Stage([
+    createAddWizard("ADD", (ctx: Scenes.WizardContext) => { console.log(ctx.session) }),
+    createDelWizard("DEL", (ctx: Scenes.WizardContext) => { console.log(ctx.session) }),
+    createUpdateWizard("UPT", (ctx: Scenes.WizardContext)=> { console.log(ctx.session) })
+]);
 
 const commands = [
     { command: 'comandos', description: 'Lista os Comandos'},
     { command: "add", description: "Adiciona uma nova mensagem"},
     { command: "register", description: "Registra o chat para o bot enviar mensagens"},
     { command: "clear", description: "Limpar todas as mensagens"},
-    { command: "del", description: "Deleta uma única mensagem"}
+    { command: "del", description: "Deleta uma única mensagem"},
+    { command: "update", description: "Atualiza uma mensagem selecionada"}
 ];
 
 interface ChatContext{
@@ -104,6 +108,7 @@ async function setup(){
     // addStage.hears("❌ Exit", ctx => ctx.scene.leave());
     bot.command('add', ctx => ctx.scene.enter("ADD") );
     bot.command('del', ctx => ctx.scene.enter("DEL") );
+    bot.command('update', ctx => ctx.scene.enter("UPT") );
 }
 
 function launch(){

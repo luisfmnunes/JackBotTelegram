@@ -1,8 +1,8 @@
 import {bot} from "../bot/bot"
 import { prisma } from "../db/prisma"
-import { addMessage } from "../db/messageModel"
+import { addMessage, updateMessage } from "../db/messageController"
 import { Message } from "../types/message"
-import { fildManyChat } from "../db/chatController"
+import { findManyChat, findAllChat } from "../db/chatController"
 
 const sendMessage = async (message: Message, chatid: BigInt) => {
     switch(message.type){
@@ -36,7 +36,7 @@ const sendMessage = async (message: Message, chatid: BigInt) => {
 const addAndSend = async (message: Message) => {
     const result = await addMessage(message);
     if(result){
-        const chats = await fildManyChat(message.groups);
+        const chats = await findManyChat(message.groups);
         if(!chats){
             console.log("No chats registered");
             return; 
@@ -49,13 +49,29 @@ const addAndSend = async (message: Message) => {
     return true;
 }
 
+const updateAndSend = async (id: number, message: Message)=> {
+    if(id == -1) return false;
+    const result = await updateMessage(id, message);
+    if(result){
+        const chats = await findManyChat(message.groups);
+        if(!chats){
+            console.log("No chats registered");
+            return;
+        }
+        for(const chat of chats){
+            await sendMessage(message, chat.chatid);
+        }
+    }
+    return true
+}
+
 const messageCheck = async () => {
     setInterval(async ()=> {
         const messages = await prisma.message.findMany();
         for(const message of messages){
             let nextCall: Date = new Date(message.lastCalled.getTime() + message.period);
             if(nextCall < new Date(Date.now())){
-                const chats = await fildManyChat(message.groups);
+                const chats = await findManyChat(message.groups);
                 console.log(`Sending Message of id ${message.id}. Caption: ${(message.caption?.substring(0,20) || "no caption")+"..."}. File ID: ${message.fileid || "no file_id"}`);
                 for(const chat of chats)
                     await sendMessage({time: message.period, type: message.type, caption: message.caption || undefined, file_id: message.fileid || undefined, groups: message.groups},chat.chatid);
@@ -72,4 +88,4 @@ const messageCheck = async () => {
     }, 60000);
 }
 
-export {addAndSend, messageCheck};
+export {addAndSend, updateAndSend, messageCheck};

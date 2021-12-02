@@ -1,15 +1,14 @@
 import { Markup } from "telegraf";
-import { WizardContext, WizardContextWizard } from "telegraf/typings/scenes";
 import { composeWizardScene } from "./sceneFactory";
 import { AnyContext, ContextComplement } from "../types/context"
-import { prisma } from "../db/prisma";
+import { findAllMessage, deleteMessage } from "../db/messageController";
 
 
 const exit_keyboard = Markup.keyboard(['🛑 Exit']).oneTime().resize();
 
 const getMessagesKeyboard = async () => {
     let messages = []
-    for(const msg of await prisma.message.findMany()){
+    for(const msg of await findAllMessage()){
         messages.push([ `${msg.id}: ${(msg.caption?.substring(0,20) || "No Text")+"..."} | Add: ${msg.createdAt.getDate().toString().padStart(2, '0')}/${(msg.createdAt.getMonth()+1).toString().padStart(2,'0')} | ${msg.type}` ]);
     }
     messages.push(['🛑 Exit']);
@@ -52,11 +51,7 @@ export const createDelWizard = composeWizardScene(
             return ctx.wizard;
         }
         if(message_id != -1 || !message_id){
-            const result = await prisma.message.delete({
-                where:{
-                    id: message_id
-                }
-            }).then(() => true).catch(() => false);
+            const result = await deleteMessage(message_id);
             if(result) ctx.reply("Mensagem deletada com sucesso");
             else ctx.reply(`Mensagem de id ${message_id} não encontrado.`);
         } else ctx.reply(`Failed message_id parsing. got: ${message_id}`);

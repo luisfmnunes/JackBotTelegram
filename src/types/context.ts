@@ -9,8 +9,9 @@ interface ContextComplement{
             file_id?: string
             caption?: string
             type: string
-            time: number,
+            time: number
             groups: number[]
+            msg_id?: number
         }
     }
     chat?:{
