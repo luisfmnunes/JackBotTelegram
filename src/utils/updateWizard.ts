@@ -61,16 +61,15 @@ export const createUpdateWizard = composeWizardScene(
             console.log("Error: Message not found!");
             return done();
         }
-        ctx.reply("Se deseja editar a mensagem, clique na caixa \"Trocar Mensagem\" e envie a mensagem desejada. Se não, clique em ➞ Next",{reply_markup: {keyboard: [['➞ Next','🛑 Exit']], inline_keyboard: [[{text: 'Trocar Mensagem', switch_inline_query_current_chat: msg.caption || "" }]], one_time_keyboard: true, resize_keyboard: true,}});
+        ctx.reply("Se deseja editar a mensagem, clique na caixa \"Trocar Mensagem\" e envie a mensagem desejada. Se não, clique em ➞ Next",{reply_markup: { inline_keyboard: [[{text: 'Trocar Mensagem', switch_inline_query_current_chat: msg.caption || "" }], [{text: '➞ Next', switch_inline_query_current_chat: '➞ Next'},{text:'🛑 Exit', switch_inline_query_current_chat: '🛑 Exit' }]]}});
         
-        ctx.wizard.state = { 
-            groups: msg.groups, 
-            time: msg.period, 
-            type: msg.type, 
-            caption: msg.caption || undefined, 
-            file_id: msg.fileid || undefined, 
-            msg_id: message_id
-        };
+        ctx.wizard.state.groups = msg.groups; 
+        ctx.wizard.state.time = msg.period;
+        ctx.wizard.state.type = msg.type; 
+        ctx.wizard.state.caption = msg.caption || undefined;
+        ctx.wizard.state.file_id = msg.fileid || undefined; 
+        ctx.wizard.state.msg_id= message_id;
+
         return ctx.wizard.next();
     }, async (ctx: (AnyContext & ContextComplement), done: any) => {
         if(ctx.message.text?.match(/🛑 Exit/)){
@@ -79,20 +78,20 @@ export const createUpdateWizard = composeWizardScene(
         else if(!ctx.message.text?.match(/➞ Next/)){
            ctx.wizard.state.caption = ctx.message.text;
         }
-        const fill_reply = "Se deseja mudar o conteúdo atual (aúdio, imagem, etc), envie como resposta." + ctx.wizard.state.file_id ? "O atual é:" : "";
+        const fill_reply = "Se deseja mudar o conteúdo atual (aúdio, imagem, etc), envie como resposta." + (ctx.wizard.state.file_id ? " O atual consta na mensagem." : "");
         switch(ctx.wizard.state.type){
             case "text":
-                await ctx.reply(`${fill_reply}`);
+                await ctx.reply(`${fill_reply}`, main_keyboard);
                 break;
             case "photo":
                 if (ctx.wizard.state.file_id)
-                    await ctx.replyWithPhoto(ctx.wizard.state.file_id, {caption: fill_reply}).catch(err => ctx.reply("Failed to fetch photo"));
+                    await ctx.replyWithPhoto(ctx.wizard.state.file_id, {caption: fill_reply, reply_markup:{keyboard:[['➞ Next','🛑 Exit']], resize_keyboard: true}}).catch(err => ctx.reply("Failed to fetch photo"));
                 else
                     await ctx.reply("Failed to fetch photo");
                 break;
             case "audio":
                 if(ctx.wizard.state.file_id)
-                    await ctx.replyWithAudio(ctx.wizard.state.file_id, {caption: fill_reply}).catch(err => ctx.reply("Failed to fetch audio"));
+                    await ctx.replyWithAudio(ctx.wizard.state.file_id, {caption: fill_reply,  reply_markup:{keyboard:[['➞ Next','🛑 Exit']], resize_keyboard: true}}).catch(err => ctx.reply("Failed to fetch audio"));
                 else
                     await ctx.reply("Failed to fetch audio");
                 break;
@@ -104,12 +103,12 @@ export const createUpdateWizard = composeWizardScene(
                 break;
             case "animation":
                 if(ctx.wizard.state.file_id)
-                    await ctx.replyWithAnimation(ctx.wizard.state.file_id, {caption: fill_reply}).catch(err=> ctx.reply("Failed to fetch animation"));
+                    await ctx.replyWithAnimation(ctx.wizard.state.file_id, {caption: fill_reply,  reply_markup:{keyboard:[['➞ Next','🛑 Exit']], resize_keyboard: true}}).catch(err=> ctx.reply("Failed to fetch animation"));
                 else
                     await ctx.reply("Failed to fetch animation");
             case "video":
                 if(ctx.wizard.state.file_id)
-                    await ctx.replyWithVideo(ctx.wizard.state.file_id, {caption: fill_reply}).catch(err => ctx.reply("Failed to fetch a video"));
+                    await ctx.replyWithVideo(ctx.wizard.state.file_id, {caption: fill_reply,  reply_markup:{keyboard:[['➞ Next','🛑 Exit']], resize_keyboard: true}}).catch(err => ctx.reply("Failed to fetch a video"));
                 else
                     await ctx.reply("Failed to fetch video");
         }

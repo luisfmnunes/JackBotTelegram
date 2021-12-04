@@ -93,11 +93,12 @@ Currently there are five available commands as described below:
    4. Confirmation of message registration
 
 - del: Deletes a single message. Available messages are displayed on keyboard.
+- update: Updtates a single message. Available messages are displayed on keyboard.
 - clear: Clear all messages stored
 
 ## Upcoming Changes
 
 - Support to Language Selection (currently only supports PT-BR)
-- Removal of messages given Date ar gument
-- Update of specific message
-- Selection of Groups for distribution
+- Removal of messages given Date argument
+- ~Update of specific message~
+- ~Selection of Groups for distribution~
